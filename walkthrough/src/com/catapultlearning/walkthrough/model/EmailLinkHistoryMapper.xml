@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.catapultlearning.walkthrough.model.EmailLinkHistory">
+    <resultMap type="EmailLinkHistory" id="emailLinkHistoryMap">
+        <id column="emaillinkhistory_id" property="emailLinkHistoryId"/>
+        <result column="user_id" property="userId"/>
+        <result column="security_key" property="securityKey"/>
+        <result column="createdtime" property="createdTime"/>
+        <result column="updatedtime" property="updatedTime"/>
+    </resultMap>
+     
+    <insert id="create" parameterType="EmailLinkHistory">
+    	<selectKey resultType="java.lang.Long" keyProperty="emailLinkHistoryId" order="BEFORE">
+    		select nextval('emaillinkhistory_id_seq')
+    	</selectKey>
+        <![CDATA[
+        	insert into 
+        		emaillinkhistory(emaillinkhistory_id,user_id, security_key,createdtime,updatedtime)
+        	values
+        		(#{emailLinkHistoryId},#{userId}, #{securityKey},#{createdTime},#{updatedTime})
+        ]]>
+    </insert>
+	 
+	 <select id="getById" parameterType="java.lang.Long" resultMap="emailLinkHistoryMap">
+        <![CDATA[
+        	select * 
+        	from 
+        		emaillinkhistory
+        	 where emaillinkhistory_id = #{id}
+        ]]>
+    </select>
+    
+    <update id="update" parameterType="EmailLinkHistory">
+        <![CDATA[
+        	update emaillinkhistory
+        	set
+        		security_key = #{securityKey},
+        		updatedtime = #{updatedTime}
+        	where user_id = #{userId}
+        ]]>
+    </update>
+	 
+	<delete id="delete" parameterType="java.lang.Long">
+        <![CDATA[
+        	delete 
+        	from 
+        		emaillinkhistory 
+        	where emaillinkhistory_id = #{id}
+        ]]>
+    </delete>
+	 
+	<select id="getEmailLinkHistoryByUserId" parameterType="java.lang.Long" resultMap="emailLinkHistoryMap">
+        <![CDATA[
+        	select * 
+        	from 
+        	    emaillinkhistory 
+        	where user_id = #{userId}
+        ]]>
+    </select>
+    
+    <select id="getEmailLinkHistoryBySecurityKey" parameterType="java.lang.String" resultMap="emailLinkHistoryMap">
+        <![CDATA[
+        	select * 
+        	from 
+        		emaillinkhistory 
+        	where security_key = #{security_key}
+        ]]>
+    </select>
+    
+</mapper>

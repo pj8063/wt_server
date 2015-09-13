@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.catapultlearning.walkthrough.model.MobileUsers">
+    <resultMap type="MobileUsers" id="mobileUsersMap">
+        <result column="user_id" property="userId"/>
+        <result column="email" property="email"/>
+        <result column="lastname" property="lastName"/>
+        <result column="firstname" property="firstName"/>
+        <result column="pw" property="passWord"/>
+        <result column="account_id" property="accountId"/>
+        <result column="device_id" property="deviceId"/>
+        <result column="usertoken" property="userToken"/>
+        <result column="is_token_expired" property="isTokenExpired"/>
+        <result column="token_expiration" property="tokenExpiration"/>
+        <result column="last_app_sync" property="lastAppSync"/>
+        <result column="last_app_login" property="lastAppLogin"/>
+        <result column="app_registration_date" property="appRegistrationDate"/>
+        <result column="has_account" property="hasAccount"/>               
+    </resultMap>
+    
+    
+    <insert id="create" parameterType="MobileUsers">
+        <![CDATA[
+        	insert into 
+        		vw_mobile_users (email, pw, device_id, usertoken, token_expiration)
+        	values
+        		(#{email},#{passWord},#{deviceId},#{userToken},#{tokenExpiration})
+        ]]>
+    </insert>
+    
+     <update id="update" parameterType="MobileUsers">
+        <![CDATA[
+        	update vw_mobile_users
+        	set
+        		last_app_sync 		= #{lastAppSync},
+   				last_app_login 		= #{lastAppLogin},
+   				usertoken 				= #{userToken},
+   				token_expiration 		= #{tokenExpiration}
+        	where account_id 		= #{accountId}
+        ]]>
+    </update>
+
+    <update id="updateMobileUserPassword" parameterType="MobileUsers">
+        <![CDATA[
+	         update vw_mobile_users
+			 set 
+			     pw = #{passWord},
+    		     email = #{email}
+        ]]>
+    </update>
+    
+    <!--  Get mobile user for check whether this user email is registered on mobile device -->
+    <select id="getMobileUsersByEmail" parameterType="java.lang.String" resultMap="mobileUsersMap">
+        <![CDATA[
+			select vw_mu.*
+			from 
+				vw_mobile_users vw_mu
+				where vw_mu.email = #{email}
+				and vw_mu.device_id is not null
+				and vw_mu.app_registration_date is not null
+				LIMIT 1 
+        ]]>
+    </select>  
+    
+    <!--  Get mobile user for check whether the email related user has logined in the specific device -->
+    <select id="getMobileUsersByEmailAndDeviceKey" parameterType="map" resultMap="mobileUsersMap">
+        <![CDATA[
+			select vw_mu.*
+			from 
+				vw_mobile_users vw_mu
+				where vw_mu.email = #{email}
+				and vw_mu.device_id = #{deviceKey}
+				and vw_mu.app_registration_date is not null
+				LIMIT 1 
+        ]]>
+    </select>  
+    
+    <!--  Get mobile user for check user token has existed the mobile accounts -->
+    <select id="getMobileUsersByUserToken" parameterType="java.lang.String" resultMap="mobileUsersMap">
+        <![CDATA[
+			select vw_mu.*
+			from 
+				vw_mobile_users vw_mu
+				where vw_mu.usertoken = #{userToken}
+				and vw_mu.device_id is not null
+				and vw_mu.app_registration_date is not null
+				LIMIT 1 
+        ]]>
+    </select> 
+    
+    <select id="getMobileUserByEmail" parameterType="String" resultMap="mobileUsersMap">
+        <![CDATA[
+        	select vw_mu.*
+   			from 
+    			vw_mobile_users vw_mu
+    		where vw_mu.email = #{email}
+    		LIMIT 1 
+        ]]>
+    </select> 
+    
+</mapper>

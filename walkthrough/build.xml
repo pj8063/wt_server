@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="walkthrough" default="deploy" basedir=".">
+	<tstamp/>
+	
+	<property file="build.properties" />
+	
+	<property name="build" value="${basedir}/build"/>
+	<property name="build.class" value="${build}/classes"/>
+	<property name="src" value="${basedir}/src"/>
+	<property name="conf" value="${basedir}/conf"/>
+	<property name="properties" value="${basedir}/properties"/>
+	<property name="config.tempalate" value="config"/>
+	<property name="webcontent" value="${basedir}/WebContent"/>
+	<property name="compile.lib" value="${basedir}/lib"/>
+	<property name="run.lib" value="${webcontent}/WEB-INF/lib"/>
+	<property name="output" value="${basedir}/output"/>
+	
+	<property name="deploydir" value="${deploy.dir}"/>
+	
+	<path id="classpath" description="Define a class path for package jar">
+		<fileset dir="${compile.lib}" includes="*.jar"/>
+	</path>
+	
+	<target name="clean" description="clean build folder">
+		<echo message="delete the ${build} folder"/>
+		<delete dir="${build}"/>
+	</target>
+	
+	<target name="init" depends="clean" description="create a temporary folder">
+		<echo message="Create a temporary folder"/>
+		<mkdir dir="${build.class}"/>
+		<mkdir dir="${output}"/>
+		<mkdir dir="${config.tempalate}"/>
+	</target>
+	
+	<target name="compile" description="compile file" depends="init">
+		<echo message="compile jave file"/>
+			<javac debug="on" srcdir="${src}" destdir="${build.class}">
+				<classpath refid="classpath"/>
+			</javac>
+		 	<copy todir="${build.class}">
+				 <fileset dir="${src}" includes="**/*.xml"></fileset>
+			</copy>
+	</target>
+	
+	<target name="jar" depends="compile">
+		<echo message="package jar"/>
+		<jar destfile="${output}/walkthrough.jar">
+			<fileset dir="${build.class}"/>
+		</jar>
+		<copy file="${output}/walkthrough.jar" todir="${compile.lib}"></copy>
+		<copy todir="${config.tempalate}">
+			<fileset dir="${conf}" includes="*.xml"/>
+	    </copy>
+		<copy todir="${run.lib}">
+			<fileset dir="${compile.lib}">
+				<exclude name="jasper.jar"/>
+				<exclude name="jasper-el.jar"/>
+				<exclude name="jsp-api.jar"/>
+				<exclude name="servlet-api.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="${config.tempalate}">
+			<fileset dir="${properties}" includes="*.properties"></fileset>
+		</copy>
+	</target>
+	
+	<target name="war" depends="jar">
+		<echo message="package war"/>
+		<war destfile="${output}/walkthrough.war" webxml="${webcontent}/WEB-INF/web.xml">
+			<fileset dir="${webcontent}"/>
+			<classes dir="${config.tempalate}" />
+		</war>
+		<delete dir="${config.tempalate}"/>
+		<delete dir="${run.lib}" includes="*.jar"/>
+	</target>
+	
+	<target name="deploy" depends="delete,war" description="move war to tomcat folder">
+		<copy file="${output}/walkthrough.war" todir="${deploydir}"/>
+	</target>
+	
+	<target name="delete" description="delete old walkthrought project in tomcat">
+		<echo message="delete old walkthrough"/>
+		<delete file="${deploy.dir}/walkthrough.war"/>
+		<delete dir="${deploy.dir}/Walkthrough"/>
+	</target>
+</project>

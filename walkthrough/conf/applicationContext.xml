@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:hdp="http://www.springframework.org/schema/hadoop" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:context="http://www.springframework.org/schema/context" xmlns:util="http://www.springframework.org/schema/util" xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+        http://www.springframework.org/schema/cache
+        http://www.springframework.org/schema/cache/spring-cache.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.2.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-3.2.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-3.2.xsd">
+
+		<!--Configuration to get the application context object from SpringUtil-->
+		<bean class="com.catapultlearning.walkthrough.util.SpringUtil"></bean>
+		
+		<!--Start DAO related Configuration -->
+		<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	        <property name="locations">
+	            <value>classpath:walkthrough.properties</value>
+	        </property>
+    	</bean>
+		
+		
+		<bean id="walkthroughDataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+	         <property name="jndiName">
+	              <value>${walkthrough.datasource.name}</value>
+	         </property>
+     	</bean>
+     	
+     	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        	<property name="dataSource" ref="walkthroughDataSource" />
+        	<property name="typeAliasesPackage" value="com.catapultlearning.walkthrough.model"/>
+        	<property name="typeHandlersPackage" value="com.catapultlearning.walkthrough.dao.typehandler"/>
+        	<property name="mapperLocations" value="classpath*:com/catapultlearning/walkthrough/model/*Mapper.xml"/>
+    	</bean>
+    	
+    	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        	<constructor-arg index="0" ref="sqlSessionFactory" />
+    	</bean>
+    	
+    	 <bean id="baseDAO" abstract="true">
+        	<property name="sqlSessionTemplate" ref="sqlSessionTemplate" />
+    	</bean>
+    	<!--End DAO related Configuration -->
+    	
+    	<!--Start transaction related Configuration -->
+    	<bean name="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        	<property name="dataSource" ref="walkthroughDataSource"></property>
+    	</bean>
+    	
+    	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+	        <tx:attributes>
+	        	<!-- Add support, service method need start with create or add -->            
+	            <tx:method name="create*" propagation="REQUIRED" read-only="false" />
+	            <tx:method name="add*" propagation="REQUIRED" read-only="false" />
+	            
+	            <!-- Edit support, service method need start with update or save or edit -->          
+	            <tx:method name="update*" propagation="REQUIRED" read-only="false" />
+	            <tx:method name="save*" propagation="REQUIRED" read-only="false" />
+	            <tx:method name="edit*" propagation="REQUIRED" read-only="false" />
+	            
+	            <!-- Delete support, service method need start with delete or remove -->   
+	            <tx:method name="delete*" propagation="REQUIRED" read-only="false" />
+	            <tx:method name="remove*" propagation="REQUIRED" read-only="false" />
+	            
+	            <tx:method name="*" propagation="SUPPORTS" read-only="true" />
+	        </tx:attributes>
+    	</tx:advice>
+
+	    <aop:config>
+	    	<!-- Start the transaction on service layer -->  
+	        <aop:pointcut id="pc" expression="execution(* com.catapultlearning.walkthrough.service..*.*(..))" />
+	        <aop:advisor pointcut-ref="pc" advice-ref="txAdvice" order="1" />
+	    </aop:config>
+	    <!--End transaction related Configuration -->
+</beans>

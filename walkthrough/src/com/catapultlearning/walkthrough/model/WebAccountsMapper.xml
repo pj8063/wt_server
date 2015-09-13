@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.catapultlearning.walkthrough.model.WebAccounts">
+    <resultMap type="WebAccounts" id="webAccountsMap">
+        <id column="webaccount_id" property="webAccountId"/>
+        <result column="user_id" property="userId"/>
+        <result column="pw" property="password"/>
+        <result column="created_date" property="createdDate"/>
+        <result column="last_login" property="lastLogin"/>
+        <result column="is_active" property="isActive"/>
+    </resultMap>
+     
+    <insert id="create" parameterType="WebAccounts">
+    	<selectKey resultType="java.lang.Long" keyProperty="webAccountId" order="BEFORE">
+    		select nextval('webaccounts_webaccount_id_seq')
+    	</selectKey>
+        <![CDATA[
+        	insert into 
+        		webaccounts(webaccount_id,user_id,pw,created_date,last_login,is_active)
+        	values
+        		(#{webAccountId},#{userId},#{password},#{createdDate},#{lastLogin},#{isActive})
+        ]]>
+    </insert>
+	 
+	
+    <select id="getById" parameterType="java.lang.Long" resultMap="webAccountsMap">
+        <![CDATA[
+        	select * 
+        	from 
+        		webaccounts 
+        	where webaccount_id = #{id}
+        ]]>
+    </select>
+
+	<select id="getByUserId" parameterType="java.lang.Long" resultMap="webAccountsMap">
+        <![CDATA[
+        	select * 
+        	from 
+        		webaccounts 
+        	where user_id = #{id}
+        ]]>
+    </select>
+    
+    <update id="update" parameterType="WebAccounts">
+        <![CDATA[
+        	update webaccounts
+        	set
+        		pw = #{password},
+        		created_date = NOW()
+        	where user_id = #{userId}
+        ]]>
+    </update>
+    
+     <delete id="delete" parameterType="Long">
+        <![CDATA[
+        	delete 
+        	from 
+        		webaccounts 
+        	where webaccount_id = #{id}
+        ]]>
+    </delete>
+</mapper>
